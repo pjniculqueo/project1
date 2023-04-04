@@ -1,4 +1,5 @@
 import numpy as np
+
 # Inicializar el ambiente y los parámetros del algoritmo
 num_states = 10
 num_actions = 2
@@ -10,9 +11,11 @@ num_episodes = 1000
 
 # Definir una función para elegir una acción con base en la política epsilon-greedy
 def choose_action(state):
-    if np.random.uniform() < epsilon:
+    if state < 0 or state >= num_states:
+        # El estado está fuera de los límites permitidos, elegir una acción aleatoria
         action = np.random.choice(num_actions)
     else:
+        # El estado está dentro de los límites permitidos, elegir la acción con la mayor estimación de valor
         action = np.argmax(Q_table[state])
     return action
 
@@ -30,8 +33,13 @@ for episode in range(num_episodes):
         else:
             next_state = state + 1
             reward = 1 if next_state == num_states - 1 else 0
-        # Actualizar la tabla Q con base en la ecuación de Q-Learning
-        Q_table[state, action] += learning_rate * (reward + discount_factor * np.max(Q_table[next_state]) - Q_table[state, action])
+        # Verificar si el siguiente estado está dentro de los límites permitidos
+        if next_state < 0 or next_state >= num_states:
+            # El siguiente estado está fuera de los límites permitidos, no actualizar la tabla Q
+            pass
+        else:
+            # El siguiente estado está dentro de los límites permitidos, actualizar la tabla Q con la estimación del valor del siguiente estado
+            Q_table[state, action] += learning_rate * (reward + discount_factor * np.max(Q_table[next_state]) - Q_table[state, action])
         # Actualizar el estado actual
         state = next_state
         # Verificar si se ha llegado al estado final
