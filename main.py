@@ -1,5 +1,4 @@
 import numpy as np
-
 # Inicializar el ambiente y los parámetros del algoritmo
 num_states = 10
 num_actions = 2
