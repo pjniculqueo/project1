@@ -1,19 +1,24 @@
-from data_collection import collect_data
-from parameter_calibration import calibrate_parameters
-from scenario_generation import build_scenarios
-from adversarial_lambda import estimate_lambda
-from plotting import plot_kpis
+import numpy as np
+from scenario_generation import calibrate_gbm_parameters, simulate_correlated_gbm
+from adversarial_lambda import train_portfolio_generator
 
+def main():
+    # 1. Suponiendo que 'data' es tu matriz de retornos históricos (N_meses x N_activos)
+    # data = collect_data() # Reemplazar con datos reales
+    data = np.random.normal(0.005, 0.02, size=(120, 7)) # 7 activos simulados (6 AFP + FX)
+    S0 = np.ones(7) * 100 # Valor cuota inicial ficticio
+    
+    # 2. Calibración y Simulación
+    params = calibrate_gbm_parameters(data)
+    periods = 35 * 12 # 35 años
+    simulated_paths = simulate_correlated_gbm(params, S0, periods, n_sims=500)
+    
+    # 3. Optimización con Deep Learning
+    print("Entrenando Generador para maximizar Sharpe secuencial...")
+    optimal_dynamic_weights = train_portfolio_generator(simulated_paths)
+    
+    print("Pesos iniciales (t=1):", optimal_dynamic_weights[0])
+    print("Pesos finales (t=420):", optimal_dynamic_weights[-1])
 
-def run_all(num_scenarios: int = 100) -> tuple[float, float]:
-    """Run the entire pipeline and return VaR and average."""
-    data = collect_data()
-    params = calibrate_parameters(data)
-    scenarios = build_scenarios(params, num_scenarios)
-    lambda_t = estimate_lambda(scenarios)
-    return plot_kpis(scenarios, lambda_t)
-
-
-if __name__ == "__main__":
-    var99, avg = run_all()
-    print(f"VaR(99): {var99:.4f}  Avg: {avg:.4f}")
+if __name__ == '__main__':
+    main()
