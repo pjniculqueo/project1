@@ -1,24 +1,29 @@
 import numpy as np
-from scenario_generation import calibrate_gbm_parameters, simulate_correlated_gbm
-from adversarial_lambda import train_portfolio_generator
+# Aquí van tus otras importaciones:
+# from scenario_generation import calibrate_gbm_parameters, simulate_correlated_gbm
+# from adversarial_lambda import train_portfolio_generator
+from plotting import generate_report_plots # <--- Nueva importación
 
 def main():
-    # 1. Suponiendo que 'data' es tu matriz de retornos históricos (N_meses x N_activos)
-    # data = collect_data() # Reemplazar con datos reales
-    data = np.random.normal(0.005, 0.02, size=(120, 7)) # 7 activos simulados (6 AFP + FX)
-    S0 = np.ones(7) * 100 # Valor cuota inicial ficticio
+    # ... (Tu código de recolección de datos y calibración) ...
     
-    # 2. Calibración y Simulación
-    params = calibrate_gbm_parameters(data)
-    periods = 35 * 12 # 35 años
-    simulated_paths = simulate_correlated_gbm(params, S0, periods, n_sims=500)
+    # Asumimos que tienes N activos, generamos nombres de prueba:
+    # asset_names = ['AFP Capital', 'AFP Cuprum', 'AFP Habitat', 'AFP Modelo', 'AFP Planvital', 'AFP Provida', 'USD/CLP']
     
-    # 3. Optimización con Deep Learning
-    print("Entrenando Generador para maximizar Sharpe secuencial...")
-    optimal_dynamic_weights = train_portfolio_generator(simulated_paths)
+    # 1. Simulas tus trayectorias
+    # simulated_paths = simulate_correlated_gbm(params, S0, periods, n_sims=500)
     
-    print("Pesos iniciales (t=1):", optimal_dynamic_weights[0])
-    print("Pesos finales (t=420):", optimal_dynamic_weights[-1])
+    # 2. Entrenas la red y obtienes tu tensor de pesos de dimensiones (periods, n_assets)
+    # optimal_dynamic_weights = train_portfolio_generator(simulated_paths)
+    
+    # 3. Generamos todos los gráficos en la carpeta 'resultados'
+    asset_names = [f"Activo {i+1}" for i in range(optimal_dynamic_weights.shape[1])]
+    generate_report_plots(
+        simulated_paths=simulated_paths, 
+        optimal_weights=optimal_dynamic_weights, 
+        asset_names=asset_names,
+        output_dir="resultados_simulacion"
+    )
 
 if __name__ == '__main__':
     main()
